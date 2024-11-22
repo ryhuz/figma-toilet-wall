@@ -7,23 +7,24 @@ import {
 	TVersionHistoryResponse,
 } from "src/common/types";
 import { appConfig } from "src/config";
+import { decodeState } from "src/utils/state-transformer";
 
 export async function GET(request: NextRequest) {
 	const query = request.nextUrl.searchParams;
 
 	const authCode = query.get("code");
-	const stateBase64 = query.get("state");
+	const encodedState = query.get("state");
 
-	if (!authCode || !stateBase64) {
+	if (!authCode || !encodedState) {
 		return new Response(undefined, {
 			status: 400,
 			statusText: "Bad Request",
 		});
 	}
 
-	const fileKey = atob(stateBase64);
-
 	try {
+		const fileKey = decodeState(encodedState);
+
 		const { access_token } = await getFigmaToken(
 			authCode,
 			new URL(request.url).origin

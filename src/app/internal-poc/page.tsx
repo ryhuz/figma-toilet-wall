@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { AUTH_REDIRECT_URL_PATH, FIGMA_URLS } from "src/common/constants";
 import { appConfig } from "src/config";
 import { validateFigmaUrlAndExtractFigmaFileKey } from "src/utils/figma";
+import { encodeState } from "src/utils/state-transformer";
 import styles from "./page.module.css";
 
 const InteralPoc = () => {
@@ -22,7 +23,7 @@ const InteralPoc = () => {
 				currOrigin
 			).toString(),
 			scope: "files:read",
-			state: btoa(key),
+			state: encodeState(key),
 			response_type: "code",
 		});
 
