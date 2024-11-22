@@ -9,3 +9,5 @@ export const FIGMA_URLS = {
 	userInfoPath: "v1/me",
 	fileVersionPath: getFileVersionHistoryUrl,
 };
+
+export const AUTH_REDIRECT_URL_PATH = "figma/callback";
