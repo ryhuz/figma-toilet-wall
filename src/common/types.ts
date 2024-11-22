@@ -12,7 +12,7 @@ export type TUserInfo = {
 	img_url: string; // gravatar
 };
 
-type TVersion = {
+export type TVersion = {
 	created_at: string;
 	id: string; // version id
 	label: string;
