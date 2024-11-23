@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { NextRequest } from "next/server";
 import { AUTH_REDIRECT_URL_PATH, FIGMA_URLS } from "src/common/constants";
 import {
@@ -40,6 +40,12 @@ export async function GET(request: NextRequest) {
 		return Response.json(historyByUser);
 	} catch (e) {
 		console.log("==== error in getThing", e);
+		if (e instanceof AxiosError && e.status === 404) {
+			return new Response(undefined, {
+				status: 404,
+				statusText: "File not found",
+			});
+		}
 		return new Response(undefined, {
 			status: 500,
 			statusText: "Internal Server Error",

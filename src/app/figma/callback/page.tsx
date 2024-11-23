@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import styles from "./callback.module.css";
@@ -11,21 +11,36 @@ const FigCallComponent = () => {
 	const params = useSearchParams();
 
 	const [fileHistory, setFileHistory] = useState<TVersion[]>();
+	const [error, setError] = useState(false);
 
 	useEffect(() => {
 		const getHistory = async () => {
-			const { data } = await axios.get("/api/figma/getThing", {
-				params: {
-					code: params.get("code"),
-					state: params.get("state"),
-				},
-			});
+			try {
+				const { data } = await axios.get("/api/figma/getThing", {
+					params: {
+						code: params.get("code"),
+						state: params.get("state"),
+					},
+				});
 
-			setFileHistory(data);
+				setFileHistory(data);
+			} catch (e) {
+				if (
+					e instanceof AxiosError &&
+					e.status === 404 &&
+					e.response?.statusText === "File not found"
+				) {
+					setError(true);
+				}
+			}
 		};
 
 		getHistory();
 	}, [params]);
+
+	if (error) {
+		return <div className={styles.container}>file not found</div>;
+	}
 
 	if (!fileHistory) {
 		return <FigmaCallbackFallback />;
