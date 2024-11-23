@@ -3,25 +3,28 @@
 import axios, { AxiosError } from "axios";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { TVersionKeyInfo } from "src/common/types";
 import styles from "./callback.module.css";
 import { FigmaCallbackFallback } from "./fallback";
-import { TVersion } from "src/common/types";
 
 const FigCallComponent = () => {
 	const params = useSearchParams();
 
-	const [fileHistory, setFileHistory] = useState<TVersion[]>();
+	const [fileHistory, setFileHistory] = useState<TVersionKeyInfo[]>();
 	const [error, setError] = useState(false);
 
 	useEffect(() => {
 		const getHistory = async () => {
 			try {
-				const { data } = await axios.get("/api/figma/getThing", {
-					params: {
-						code: params.get("code"),
-						state: params.get("state"),
-					},
-				});
+				const { data } = await axios.get<TVersionKeyInfo[]>(
+					"/api/figma/getThing",
+					{
+						params: {
+							code: params.get("code"),
+							state: params.get("state"),
+						},
+					}
+				);
 
 				setFileHistory(data);
 			} catch (e) {

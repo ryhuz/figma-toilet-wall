@@ -6,6 +6,7 @@ import {
 	TUserInfo,
 	TVersion,
 	TVersionHistoryResponse,
+	TVersionKeyInfo,
 } from "src/common/types";
 import { appConfig } from "src/config";
 import { decodeState } from "src/utils/state-transformer";
@@ -39,7 +40,14 @@ export async function GET(request: NextRequest) {
 		const historyByUser = history.filter((item) => item.user.id === userId);
 		console.log("==== getFigmaFileHistory response", historyByUser);
 
-		return Response.json(historyByUser);
+		const historyData: TVersionKeyInfo[] = historyByUser.map((item) => ({
+			created_at: item.created_at,
+			id: item.id,
+			label: item.label,
+			description: item.description,
+		}));
+
+		return Response.json(historyData);
 	} catch (e) {
 		console.log("==== error in getThing", e);
 		if (e instanceof AxiosError && e.status === 404) {
