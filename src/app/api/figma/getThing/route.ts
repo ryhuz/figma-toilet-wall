@@ -4,6 +4,7 @@ import { AUTH_REDIRECT_URL_PATH, FIGMA_URLS } from "src/common/constants";
 import {
 	TTokenResponse,
 	TUserInfo,
+	TVersion,
 	TVersionHistoryResponse,
 } from "src/common/types";
 import { appConfig } from "src/config";
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
 		]);
 
 		const historyByUser = history.filter((item) => item.user.id === userId);
+		console.log("==== getFigmaFileHistory response", historyByUser);
 
 		return Response.json(historyByUser);
 	} catch (e) {
@@ -103,13 +105,21 @@ const getFigmaUserId = async (token: string) => {
 	return data.id;
 };
 
-const getFigmaFileHistory = async (fileKey: string, token: string) => {
-	console.log("==== getFigmaFileHistory start");
+const TEMP_NEXT_PAGE_LIMIT = 10;
+const getFigmaFileHistory = async (
+	fileKey: string,
+	token: string,
+	nextPageUrl?: string,
+	currPage = 1
+): Promise<TVersion[]> => {
+	console.log("==== getFigmaFileHistory start. page", currPage);
 
-	const getFileVersionHistoryUrl = new URL(
-		FIGMA_URLS.fileVersionPath(fileKey),
-		FIGMA_URLS.apiBaseUrl
-	).toString();
+	const getFileVersionHistoryUrl =
+		nextPageUrl ||
+		new URL(
+			FIGMA_URLS.fileVersionPath(fileKey),
+			FIGMA_URLS.apiBaseUrl
+		).toString();
 
 	const { data } = await axios.get<TVersionHistoryResponse>(
 		getFileVersionHistoryUrl,
@@ -120,6 +130,16 @@ const getFigmaFileHistory = async (fileKey: string, token: string) => {
 		}
 	);
 
-	console.log("==== getFigmaFileHistory response", data);
+	if (data.pagination.next_page && currPage <= TEMP_NEXT_PAGE_LIMIT) {
+		return [
+			...data.versions,
+			...(await getFigmaFileHistory(
+				fileKey,
+				token,
+				data.pagination.next_page,
+				currPage + 1
+			)),
+		];
+	}
 	return data.versions;
 };
